@@ -1,7 +1,8 @@
 package browser
 
 import (
-	b64 "encoding/base64"
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"io/ioutil"
 	"os"
@@ -17,7 +18,8 @@ type WebsiteSource struct {
 
 //WriteToFile writes this WebsiteSource to a file under the folder savedWebsites
 func (w *WebsiteSource) WriteToFile() error {
-	fileName := b64.StdEncoding.EncodeToString([]byte(w.URL))
+	sum := md5.Sum([]byte(w.URL + w.CSSSelect))
+	fileName := hex.EncodeToString(sum[:]) //Try to generate a file name of fixed length
 
 	sourceJSON, err := json.Marshal(*w)
 
