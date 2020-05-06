@@ -54,9 +54,8 @@ func (b *Browser) Close() {
 //and uses Firefox as the browser.
 func NewBrowser() (*Browser, error) {
 	const (
-		// These paths will be different on your system.
-		seleniumPath    = "../../vendor/selenium-server-standalone-3.141.59.jar"
-		geckoDriverPath = "../../vendor/geckodriver.exe"
+		seleniumPath    = "libs/selenium-server-standalone-3.141.59.jar"
+		geckoDriverPath = "libs/geckodriver.exe"
 		port            = 8081
 	)
 	opts := []selenium.ServiceOption{
