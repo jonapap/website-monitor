@@ -35,14 +35,16 @@ func (w *WebsiteSource) WriteToFile() error {
 }
 
 //GetAllWebsitesFromFiles reads the folder savedWebsites and returns all the websites
-//in there
-func GetAllWebsitesFromFiles() ([]WebsiteSource, error) {
+//in there. First argument returned is the websites themselves, and the second is the name
+//of the file themselves.
+func GetAllWebsitesFromFiles() ([]WebsiteSource, []string, error) {
 	websites, err := ioutil.ReadDir("savedWebsites/")
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	sources := []WebsiteSource{}
+	fileNames := []string{}
 
 	for _, f := range websites {
 		if !strings.HasSuffix(f.Name(), ".json") {
@@ -51,16 +53,17 @@ func GetAllWebsitesFromFiles() ([]WebsiteSource, error) {
 
 		bytes, err := ioutil.ReadFile("savedWebsites/" + f.Name())
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		var dat map[string]interface{}
 
 		if err := json.Unmarshal(bytes, &dat); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		sources = append(sources, WebsiteSource{dat["URL"].(string), dat["Source"].(string), dat["CSSSelect"].(string)})
+		fileNames = append(fileNames, f.Name())
 	}
 
-	return sources, nil
+	return sources, fileNames, nil
 }

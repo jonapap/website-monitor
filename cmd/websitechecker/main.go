@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	websites, err := browser.GetAllWebsitesFromFiles()
+	websites, _, err := browser.GetAllWebsitesFromFiles()
 
 	switch err.(type) {
 	case nil:
