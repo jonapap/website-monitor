@@ -35,5 +35,7 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Println("Returned text : " + source.GetSource())
+	if err := source.WriteToFile(); err != nil {
+		panic(err)
+	}
 }

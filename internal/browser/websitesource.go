@@ -1,17 +1,31 @@
 package browser
 
+import (
+	b64 "encoding/base64"
+	"encoding/json"
+	"io/ioutil"
+	"os"
+)
+
 //WebsiteSource represents the source code of a website
 type WebsiteSource struct {
-	url    string
-	source string
+	URL    string
+	Source string
 }
 
-//GetURL returns the url of the webpage
-func (w *WebsiteSource) GetURL() string {
-	return w.url
-}
+//WriteToFile writes this WebsiteSource to a file under the folder savedWebsites
+func (w *WebsiteSource) WriteToFile() error {
+	fileName := b64.StdEncoding.EncodeToString([]byte(w.URL))
 
-//GetSource returns the source of the webpage
-func (w *WebsiteSource) GetSource() string {
-	return w.source
+	sourceJSON, err := json.Marshal(*w)
+
+	if err != nil {
+		return err
+	}
+
+	if err := os.MkdirAll("savedWebsites", 0644); err != nil {
+		return err
+	}
+
+	return ioutil.WriteFile("savedWebsites/"+fileName+".json", sourceJSON, 0644)
 }
