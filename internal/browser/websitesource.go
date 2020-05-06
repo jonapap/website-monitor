@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
+	"strings"
 )
 
 //WebsiteSource represents the source code of a website
@@ -28,4 +29,35 @@ func (w *WebsiteSource) WriteToFile() error {
 	}
 
 	return ioutil.WriteFile("savedWebsites/"+fileName+".json", sourceJSON, 0644)
+}
+
+//GetAllWebsitesFromFiles reads the folder savedWebsites and returns all the websites
+//in there
+func GetAllWebsitesFromFiles() ([]WebsiteSource, error) {
+	websites, err := ioutil.ReadDir("savedWebsites/")
+	if err != nil {
+		return nil, err
+	}
+
+	sources := []WebsiteSource{}
+
+	for _, f := range websites {
+		if !strings.HasSuffix(f.Name(), ".json") {
+			continue //Ignore files that are not of type json
+		}
+
+		bytes, err := ioutil.ReadFile("savedWebsites/" + f.Name())
+		if err != nil {
+			return nil, err
+		}
+		var dat map[string]interface{}
+
+		if err := json.Unmarshal(bytes, &dat); err != nil {
+			return nil, err
+		}
+
+		sources = append(sources, WebsiteSource{dat["URL"].(string), dat["Source"].(string)})
+	}
+
+	return sources, nil
 }
