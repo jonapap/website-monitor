@@ -18,13 +18,30 @@ func (b *Browser) NavigateTo(url string) error {
 }
 
 //GetSource returns the source code of the current webpage
-func (b *Browser) GetSource() (WebsiteSource, error) {
-	sr, err := b.PageSource()
-	if err != nil {
-		return WebsiteSource{}, err
+//If xpath is empty, the whole page is returned. If it is specified, the source
+//code of the element pointed at by the xpath will be returned.
+func (b *Browser) GetSource(cssSelect string) (WebsiteSource, error) {
+	if cssSelect == "" {
+		sr, err := b.PageSource()
+		if err != nil {
+			return WebsiteSource{}, err
+		}
+		url, err := b.CurrentURL()
+		return WebsiteSource{url, sr, cssSelect}, nil
 	}
+
+	elem, err := b.FindElement(selenium.ByCSSSelector, cssSelect)
+	if err != nil {
+		panic(err)
+	}
+
+	src, err := b.ExecuteScript("return arguments[0].outerHTML;", []interface{}{elem})
+	if err != nil {
+		panic(err)
+	}
+
 	url, err := b.CurrentURL()
-	return WebsiteSource{url, sr}, nil
+	return WebsiteSource{url, src.(string), cssSelect}, nil
 }
 
 //Close will clean up and close the Browser. Must be called when the program us done using the Browser.

@@ -33,7 +33,7 @@ func main() {
 			panic(err)
 		}
 
-		source, err := b.GetSource()
+		source, err := b.GetSource(w.CSSSelect)
 		if err != nil {
 			panic(err)
 		}

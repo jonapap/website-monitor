@@ -10,8 +10,9 @@ import (
 
 //WebsiteSource represents the source code of a website
 type WebsiteSource struct {
-	URL    string
-	Source string
+	URL       string
+	Source    string
+	CSSSelect string
 }
 
 //WriteToFile writes this WebsiteSource to a file under the folder savedWebsites
@@ -56,7 +57,7 @@ func GetAllWebsitesFromFiles() ([]WebsiteSource, error) {
 			return nil, err
 		}
 
-		sources = append(sources, WebsiteSource{dat["URL"].(string), dat["Source"].(string)})
+		sources = append(sources, WebsiteSource{dat["URL"].(string), dat["Source"].(string), dat["CSSSelect"].(string)})
 	}
 
 	return sources, nil

@@ -9,6 +9,7 @@ import (
 
 func main() {
 	websiteURL := flag.String("website", "", "URL of website to load. Include the protocol (ex: http://)")
+	cssFlag := flag.String("selector", "", "Optional. CSS selector of a specific element to save.")
 	flag.Parse()
 
 	if *websiteURL == "" {
@@ -30,7 +31,7 @@ func main() {
 		return
 	}
 
-	source, err := b.GetSource()
+	source, err := b.GetSource(*cssFlag)
 	if err != nil {
 		panic(err)
 	}
