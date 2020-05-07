@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/jonapap/website-watcher/internal/browser"
 )
@@ -13,8 +16,15 @@ func main() {
 	flag.Parse()
 
 	if *websiteURL == "" {
-		fmt.Println("Specify the website to load using -website")
-		return
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Println("Which website do you want to save? Please include the protocol (ex: http://):")
+		*websiteURL, _ = reader.ReadString('\n')
+		*websiteURL = strings.Replace(*websiteURL, "\n", "", -1)
+
+		fmt.Println("Please enter a CSS selector if you want to save part of the webpage. If you want to save the full page, enter nothing:")
+		*cssFlag, _ = reader.ReadString('\n')
+		*cssFlag = strings.Replace(*cssFlag, "\n", "", -1)
+		*cssFlag = strings.Replace(*cssFlag, "\r", "", -1)
 	}
 
 	b, err := browser.NewBrowser()
