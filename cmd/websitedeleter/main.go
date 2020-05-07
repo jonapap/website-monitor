@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -10,14 +11,14 @@ import (
 func main() {
 	websites, fileNames, err := browser.GetAllWebsitesFromFiles()
 
-	switch err.(type) {
-	case nil:
-	case *os.PathError:
+	var e *os.PathError
+	if errors.As(err, &e) {
 		fmt.Println("The folder savedWebsites doesn't seem to exist.")
 		return
-	default:
+	} else if err != nil {
 		panic(err)
 	}
+
 	if len(websites) == 0 {
 		fmt.Println("The folder savedWebsites exist but there is nothing in it.")
 		return

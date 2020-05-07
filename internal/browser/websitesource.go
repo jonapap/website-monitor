@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -22,13 +23,12 @@ func (w *WebsiteSource) WriteToFile() error {
 	fileName := hex.EncodeToString(sum[:]) //Try to generate a file name of fixed length
 
 	sourceJSON, err := json.Marshal(*w)
-
 	if err != nil {
-		return err
+		return fmt.Errorf("Error writing to file: %v", err)
 	}
 
 	if err := os.MkdirAll("savedWebsites", 0644); err != nil {
-		return err
+		return fmt.Errorf("Error writing to file: %w", err)
 	}
 
 	return ioutil.WriteFile("savedWebsites/"+fileName+".json", sourceJSON, 0644)
@@ -40,7 +40,7 @@ func (w *WebsiteSource) WriteToFile() error {
 func GetAllWebsitesFromFiles() ([]WebsiteSource, []string, error) {
 	websites, err := ioutil.ReadDir("savedWebsites/")
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("Error reading directory savedWebsites: %w", err)
 	}
 
 	sources := []WebsiteSource{}
@@ -53,17 +53,16 @@ func GetAllWebsitesFromFiles() ([]WebsiteSource, []string, error) {
 
 		bytes, err := ioutil.ReadFile("savedWebsites/" + f.Name())
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, fmt.Errorf("Error reading file %s: %w", f.Name(), err)
 		}
 		var dat map[string]interface{}
 
 		if err := json.Unmarshal(bytes, &dat); err != nil {
-			return nil, nil, err
+			return nil, nil, fmt.Errorf("Error reading file %s: %v", f.Name(), err)
 		}
 
 		sources = append(sources, WebsiteSource{dat["URL"].(string), dat["Source"].(string), dat["CSSSelect"].(string)})
 		fileNames = append(fileNames, f.Name())
 	}
-
 	return sources, fileNames, nil
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -10,16 +11,17 @@ import (
 func main() {
 	websites, _, err := browser.GetAllWebsitesFromFiles()
 
-	switch err.(type) {
-	case nil:
-	case *os.PathError:
+	var e *os.PathError
+	if errors.As(err, &e) {
 		fmt.Println("The folder savedWebsites doesn't seem to exist. Please run websitesaver.exe beforehand.")
 		return
-	default:
+	} else if err != nil {
 		panic(err)
 	}
+
 	if len(websites) == 0 {
 		fmt.Println("The folder savedWebsites exist but there is nothing in it. Please run websitesaver.exe beforehand.")
+		return
 	}
 
 	b, err := browser.NewBrowser()
@@ -30,12 +32,14 @@ func main() {
 
 	for _, w := range websites {
 		if err = b.NavigateTo(w.URL); err != nil {
-			panic(err)
+			fmt.Printf("Error navigating to %s", w.URL)
+			continue
 		}
 
 		source, err := b.GetSource(w.CSSSelect)
 		if err != nil {
-			panic(err)
+			fmt.Printf("Error getting the source of %s", w.URL)
+			continue
 		}
 
 		if w == source {

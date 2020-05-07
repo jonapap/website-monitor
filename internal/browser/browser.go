@@ -18,13 +18,13 @@ func (b *Browser) NavigateTo(url string) error {
 }
 
 //GetSource returns the source code of the current webpage
-//If xpath is empty, the whole page is returned. If it is specified, the source
-//code of the element pointed at by the xpath will be returned.
+//If cssSelect is empty, the whole page is returned. If it is specified, the source
+//code of the element pointed at by cssSelect will be returned.
 func (b *Browser) GetSource(cssSelect string) (WebsiteSource, error) {
-	if cssSelect == "" {
+	if cssSelect == "" { //Get source code of the full page if selector is not specified
 		sr, err := b.PageSource()
 		if err != nil {
-			return WebsiteSource{}, err
+			return WebsiteSource{}, fmt.Errorf("Error getting page source: %w", err)
 		}
 		url, err := b.CurrentURL()
 		return WebsiteSource{url, sr, cssSelect}, nil
@@ -32,15 +32,15 @@ func (b *Browser) GetSource(cssSelect string) (WebsiteSource, error) {
 
 	elem, err := b.FindElement(selenium.ByCSSSelector, cssSelect)
 	if err != nil {
-		panic(err)
+		return WebsiteSource{}, fmt.Errorf("Error finding the element with selector %s: %w", cssSelect, err)
 	}
 
 	src, err := b.ExecuteScript("return arguments[0].outerHTML;", []interface{}{elem})
 	if err != nil {
-		panic(err)
+		return WebsiteSource{}, fmt.Errorf("Error executing script for element with selector %s: %w", cssSelect, err)
 	}
 
-	url, err := b.CurrentURL()
+	url, _ := b.CurrentURL()
 	return WebsiteSource{url, src.(string), cssSelect}, nil
 }
 
@@ -60,19 +60,17 @@ func NewBrowser() (*Browser, error) {
 	)
 	opts := []selenium.ServiceOption{
 		selenium.GeckoDriver(geckoDriverPath), // Specify the path to GeckoDriver in order to use Firefox.
-		//selenium.Output(os.Stderr),            // Output debug information to STDERR.
 	}
-	//selenium.SetDebug(true)
 	service, err := selenium.NewSeleniumService(seleniumPath, port, opts...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Error creating a new Selenium service: %w", err)
 	}
 
 	// Connect to the WebDriver instance running locally.
 	caps := selenium.Capabilities{"browserName": "firefox"}
 	wd, err := selenium.NewRemote(caps, fmt.Sprintf("http://localhost:%d/wd/hub", port))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Error create remote: %w", err)
 	}
 
 	return &Browser{service, wd}, nil
