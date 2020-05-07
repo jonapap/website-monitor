@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/jonapap/website-watcher/internal/browser"
+	"github.com/jonapap/website-watcher/internal/mail"
 )
 
 func main() {
@@ -30,6 +31,10 @@ func main() {
 	}
 	defer b.Close()
 
+	modified := false //Tracks if at least one website has changed
+	notification := mail.Message{}
+	notification.SetSubject("Website Watcher : A watched website has changed")
+	notification.AddLineToBody("Here is the list of websites that have changed since their last save:\n")
 	for _, w := range websites {
 		if err = b.NavigateTo(w.URL); err != nil {
 			fmt.Printf("Error navigating to %s", w.URL)
@@ -46,6 +51,19 @@ func main() {
 			fmt.Printf("%s didn't change since last save\n", w.URL)
 		} else {
 			fmt.Printf("%s was modified!\n", w.URL)
+			notification.AddLineToBody(fmt.Sprintf("URL: %s Selector: %s", w.URL, w.CSSSelect))
+			modified = true
+		}
+	}
+
+	if modified {
+		err := notification.Send()
+
+		var e mail.ConfigFileDidNotExistError
+		if errors.As(err, &e) {
+			fmt.Println(err)
+		} else if err != nil {
+			panic(err)
 		}
 	}
 }
