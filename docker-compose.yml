@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+    watcher:
+        image: jonapap/website-watcher 
+#        build: ./
+        restart: always
+        container_name: website-watcher
+        volumes:
+            - website-data:/dist/savedWebsites
+        environment:
+            - MAIL_from=
+            - MAIL_to=
+            - MAIL_password=
+            - MAIL_host=
+            - MAIL_port=
+            - MAIL_username=
+        
+    selenium:
+        image: selenium/standalone-firefox
+        restart: always
+        expose:
+            - "4444"
+            
+volumes:
+    website-data:

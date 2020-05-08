@@ -30,28 +30,33 @@ func (m *Message) AddLineToBody(s string) {
 //Send sends the messsage using the settings set in the configuration
 //file config/mail.ini
 func (m *Message) Send() error {
-	config, err := ini.Load("config/email.ini")
+	values := map[string]string{"from": "", "to": "", "password": "", "host": "", "port": "", "username": ""}
+	if os.Getenv("InsideDockerContainer") != "True" {
+		config, err := ini.Load("config/email.ini")
 
-	var e *os.PathError
-	if errors.As(err, &e) {
-		if err := createEmailConfig(); err != nil {
-			return fmt.Errorf("Error creating config file: %v", err)
+		var e *os.PathError
+		if errors.As(err, &e) {
+			if err := createEmailConfig(); err != nil {
+				return fmt.Errorf("Error creating config file: %v", err)
+			}
+			return ConfigFileDidNotExistError{} //Return an error so the user can modify the default values
+		} else if err != nil {
+			return fmt.Errorf("Error opening config file: %v", err)
 		}
-
-		return ConfigFileDidNotExistError{} //Return an error so the user can modify the default values
-
-	} else if err != nil {
-		return fmt.Errorf("Error opening config file: %v", err)
+		section := config.Section("")
+		for k := range values {
+			values[k] = section.Key(k).String()
+		}
+	} else { //We are inside a docker container, use the environment variables
+		for k := range values {
+			values[k] = os.Getenv("MAIL_" + k)
+		}
 	}
-	section := config.Section("")
-
 	message := "Subject: " + m.subject + "\n\n" + m.body
 
-	auth := smtp.PlainAuth("", section.Key("from").String(), section.Key("password").String(), section.Key("host").String())
-	address := section.Key("host").String() + ":" + section.Key("port").String()
-	err = smtp.SendMail(address, auth, section.Key("from").String(), []string{section.Key("to").String()}, []byte(message))
-
-	return nil
+	auth := smtp.PlainAuth("", values["username"], values["password"], values["host"])
+	address := values["host"] + ":" + values["port"]
+	return smtp.SendMail(address, auth, values["from"], []string{values["to"]}, []byte(message))
 }
 
 //ConfigFileDidNotExistError is thrown if the config file did not exist initially

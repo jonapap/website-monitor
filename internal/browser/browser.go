@@ -2,6 +2,7 @@ package browser
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/tebeka/selenium"
 )
@@ -47,28 +48,36 @@ func (b *Browser) GetSource(cssSelect string) (WebsiteSource, error) {
 //Close will clean up and close the Browser. Must be called when the program us done using the Browser.
 func (b *Browser) Close() {
 	b.Quit()
-	b.service.Stop()
+	if b.service != nil {
+		b.service.Stop()
+	}
 }
 
 //NewBrowser returns a new Browser object. In the background, it initializes a new Selenium service
 //and uses Firefox as the browser.
 func NewBrowser() (*Browser, error) {
-	const (
-		seleniumPath    = "libs/selenium-server-standalone-3.141.59.jar"
-		geckoDriverPath = "libs/geckodriver.exe"
-		port            = 8081
-	)
-	opts := []selenium.ServiceOption{
-		selenium.GeckoDriver(geckoDriverPath), // Specify the path to GeckoDriver in order to use Firefox.
-	}
-	service, err := selenium.NewSeleniumService(seleniumPath, port, opts...)
-	if err != nil {
-		return nil, fmt.Errorf("Error creating a new Selenium service: %w", err)
+	var service *selenium.Service
+	seleniumAddr := "selenium"
+	if os.Getenv("InsideDockerContainer") != "True" { //Only start a selenium instance if we are not inside a docker container
+		seleniumAddr = "localhost"
+		const (
+			seleniumPath    = "libs/selenium-server-standalone-3.141.59.jar"
+			geckoDriverPath = "libs/geckodriver.exe"
+			port            = 4444
+		)
+		opts := []selenium.ServiceOption{
+			selenium.GeckoDriver(geckoDriverPath), // Specify the path to GeckoDriver in order to use Firefox.
+		}
+		var err error
+		service, err = selenium.NewSeleniumService(seleniumPath, port, opts...)
+		if err != nil {
+			return nil, fmt.Errorf("Error creating a new Selenium service: %w", err)
+		}
 	}
 
 	// Connect to the WebDriver instance running locally.
 	caps := selenium.Capabilities{"browserName": "firefox"}
-	wd, err := selenium.NewRemote(caps, fmt.Sprintf("http://localhost:%d/wd/hub", port))
+	wd, err := selenium.NewRemote(caps, fmt.Sprintf("http://%s:%d/wd/hub", seleniumAddr, 4444))
 	if err != nil {
 		return nil, fmt.Errorf("Error create remote: %w", err)
 	}
