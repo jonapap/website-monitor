@@ -10,7 +10,7 @@
     + [Usage](#usage)
 
 ## Overview
-Set of three utilities that together can monitor if a website, or part of it, gets modified. To obtain information about the websites, Selenium is used to control a Firefox browser. See instructions below in the [Docker Setup](#docker-setup) or [Manual Setup](#manual-setup) section on how to setup Website Monitor along with Selenium.
+Set of three utilities that together can monitor if a website, or part of it, gets modified. To obtain information about the websites, Selenium is used to control a Firefox browser. See instructions below in the [Docker Setup](#docker-setup) section on how to setup Website Monitor along with Selenium.
 
 ### Website Saver
 ```shell
@@ -20,7 +20,7 @@ websitesaver [-website website] [-selector cssSelector]
 Saves the source code of the specified website to a file in the directory *./savedWebsite*. If **cssSelector** is specified, only the part of the website specified by the CSS selector will be saved.  
 If **website** is not specified, the program will start in interactive mode and ask for the information.
 
-The information about the website is saved in a JSON format. To prevent issues with characters that can't be in a filename and to prevent name collisions, the filename of the file is obtained by combining the URL of the website with the CSS selector, and transformed afterward to an MD5 hash.
+The information about the website is saved in a JSON format. To prevent issues with characters that can't be in a filename and to prevent name collisions, the filename of the file is obtained by combining the URL of the website with the CSS selector, and transforming this afterward to an MD5 hash.
 
 ### Website Checker
 ```shell
