@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/jonapap/website-watcher/internal/browser"
+	"github.com/jonapap/website-monitor/internal/browser"
 )
 
 func main() {

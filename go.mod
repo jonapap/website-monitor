@@ -1,4 +1,4 @@
-module github.com/jonapap/website-watcher
+module github.com/jonapap/website-monitor
 
 go 1.14
 

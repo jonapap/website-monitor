@@ -2,10 +2,10 @@ version: '3'
 
 services:
     watcher:
-        image: jonapap/website-watcher 
+        image: jonapap/website-monitor
 #        build: ./
         restart: always
-        container_name: website-watcher
+        container_name: website-monitor
         volumes:
             - website-data:/dist/savedWebsites
         environment:
